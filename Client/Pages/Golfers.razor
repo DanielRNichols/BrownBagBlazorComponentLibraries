@@ -6,44 +6,63 @@
 
 <PageTitle>Golfers</PageTitle>
 
-<h5>Golfers</h5>
-
 @if (golfers == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <table>
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Country</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var golfer in golfers)
-            {
-                <tr>
-                    <td>@golfer.Id</td>
-                    <td>@golfer.FirstName</td>
-                    <td>@golfer.LastName</td>
-                    <td>@golfer.Country</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<MudTable Items="@golfers" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<Golfer,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Golfers</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<Golfer, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Golfer, object>(x=>x.FirstName)">First Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Golfer, object>(x=>x.LastName)">Last Name</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<Golfer, object>(x=>x.Country)">Country</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="First Name">@context.FirstName</MudTd>
+        <MudTd DataLabel="Last Name">@context.LastName</MudTd>
+        <MudTd DataLabel="Country">@context.Country</MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
 }
 
 @code {
     private IList<Golfer>? golfers;
+    private bool dense = true;
+    private bool striped = true;
+    private bool hover;
+    private bool bordered = true;
+
+    private string searchString1 = "";
+    private Golfer? selectedItem1 = null;
+    private HashSet<Golfer> selectedItems = new HashSet<Golfer>();
 
     protected override async Task OnInitializedAsync()
     {
         var baseUrl = NavManager.BaseUri;
         golfers = await HttpClient.GetFromJsonAsync<IList<Golfer>>($"{baseUrl}api/golfers");
         Console.WriteLine(JsonSerializer.Serialize(golfers));
+    }
+
+    private bool FilterFunc1(Golfer golfer) => FilterFunc(golfer, searchString1);
+
+    private bool FilterFunc(Golfer golfer, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if ($"{golfer.FirstName} {golfer.LastName} {golfer.Country}".Contains(searchString))
+            return true;
+        return false;
     }
 }
