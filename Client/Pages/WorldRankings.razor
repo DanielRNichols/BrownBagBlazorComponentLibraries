@@ -1,0 +1,48 @@
+﻿@page "/worldrankings"
+@using MudBlazorGolfers.Shared
+@using System.Text.Json
+
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
+
+<PageTitle>World Rankings</PageTitle>
+
+<h5>World Rankings</h5>
+
+@if (rankings == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Current Rank</th>
+                <th>Previous Rank</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ranking in rankings)
+            {
+                <tr>
+                    <td>@ranking.Id</td>
+                    <td>@ranking.Rank</td>
+                    <td>@ranking.PreviousRank</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IList<WorldRanking>? rankings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var baseUrl = NavManager.BaseUri;
+        rankings = await HttpClient.GetFromJsonAsync<IList<WorldRanking>>($"{baseUrl}api/worldrankings");
+        Console.WriteLine(JsonSerializer.Serialize(rankings));
+    }
+}

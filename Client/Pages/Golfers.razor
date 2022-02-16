@@ -1,0 +1,49 @@
+﻿@page "/golfers"
+@using MudBlazorGolfers.Shared
+@using System.Text.Json
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
+
+<PageTitle>Golfers</PageTitle>
+
+<h5>Golfers</h5>
+
+@if (golfers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Country</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var golfer in golfers)
+            {
+                <tr>
+                    <td>@golfer.Id</td>
+                    <td>@golfer.FirstName</td>
+                    <td>@golfer.LastName</td>
+                    <td>@golfer.Country</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IList<Golfer>? golfers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var baseUrl = NavManager.BaseUri;
+        golfers = await HttpClient.GetFromJsonAsync<IList<Golfer>>($"{baseUrl}api/golfers");
+        Console.WriteLine(JsonSerializer.Serialize(golfers));
+    }
+}
