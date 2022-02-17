@@ -1,9 +1,14 @@
 using Microsoft.AspNetCore.ResponseCompression;
 using MudBlazorGolfers.Server.MappingProfiles;
+using MudBlazorGolfers.Server.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Repositories
+builder.Services.AddScoped<IGolfersRepository, GolfersRepository>();
+builder.Services.AddScoped<IWorldRankingsRepository, WorldRankingsRepository>();
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfiles));

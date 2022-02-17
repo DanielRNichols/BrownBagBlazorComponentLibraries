@@ -1,48 +1,74 @@
 ﻿@page "/worldrankings"
 @using MudBlazorGolfers.Shared
 @using System.Text.Json
-
 @inject HttpClient HttpClient
 @inject NavigationManager NavManager
 
 <PageTitle>World Rankings</PageTitle>
+<MudContainer xs="12" sm="8">
 
-<h5>World Rankings</h5>
-
-@if (rankings == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table>
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Current Rank</th>
-                <th>Previous Rank</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var ranking in rankings)
-            {
-                <tr>
-                    <td>@ranking.Id</td>
-                    <td>@ranking.Rank</td>
-                    <td>@ranking.PreviousRank</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+    @if (rankings == null)
+    {
+        <MudContainer>
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true"/>
+        </MudContainer>
+    }
+    else
+    {
+    <MudTable Items="@rankings" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<WorldRanking,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">World Rankings</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<WorldRanking, object>(x=>x.Rank)">Rank</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<WorldRanking, object>(x=>x.Id)">Id</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<WorldRanking, object>(x=>x.Golfer.FirstName)">First Name</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<WorldRanking, object>(x=>x.Golfer.LastName)">Last Name</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<WorldRanking, object>(x=>x.Golfer.Country)">Country</MudTableSortLabel></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Rank">@context.Rank</MudTd>
+            <MudTd DataLabel="Id">@context.Id</MudTd>
+            <MudTd DataLabel="First Name">@context.Golfer.FirstName</MudTd>
+            <MudTd DataLabel="Last Name">@context.Golfer.LastName</MudTd>
+            <MudTd DataLabel="Country">@context.Golfer.Country</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+    }
+</MudContainer>
 
 @code {
     private IList<WorldRanking>? rankings;
+    private bool dense = true;
+    private bool striped = true;
+    private bool hover;
+    private bool bordered = true;
+
+    private string searchString1 = "";
+    private WorldRanking? selectedItem1 = null;
+    private HashSet<WorldRanking> selectedItems = new HashSet<WorldRanking>();
 
     protected override async Task OnInitializedAsync()
     {
         var baseUrl = NavManager.BaseUri;
         rankings = await HttpClient.GetFromJsonAsync<IList<WorldRanking>>($"{baseUrl}api/worldrankings");
         Console.WriteLine(JsonSerializer.Serialize(rankings));
+    }
+
+    private bool FilterFunc1(WorldRanking ranking) => FilterFunc(ranking, searchString1);
+
+    private bool FilterFunc(WorldRanking ranking, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if ($"{ranking.Golfer.FirstName} {ranking.Golfer.LastName} {ranking.Golfer.Country}".Contains(searchString))
+            return true;
+        return false;
     }
 }

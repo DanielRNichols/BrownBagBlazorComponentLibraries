@@ -8,8 +8,10 @@ namespace MudBlazorGolfers.Shared
 {
     public class WorldRanking
     {
-        public string Id { get; set; }
-        public string Rank { get; set; }
-        public string PreviousRank { get; set; }
+        public string Id { get; set; } = String.Empty;
+        public string Rank { get; set; } = String.Empty;
+        public string PreviousRank { get; set; } = String.Empty;
+
+        public Golfer Golfer { get; set; } = new Golfer();
     }
 }
